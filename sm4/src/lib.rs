@@ -330,5 +330,17 @@ mod tests {
 
         let dec = c.decrypt(enc);
         assert_eq!(original_text, dec);
+
+        let mut res = original_text;
+        for _i in 0..1_000_000 {
+            res = c.encrypt(res);
+        }
+        assert_eq!(
+            [
+                0x59, 0x52, 0x98, 0xc7, 0xc6, 0xfd, 0x27, 0x1f, 0x04, 0x02, 0xf8, 0x04, 0xc3, 0x3d,
+                0x3f, 0x66
+            ],
+            res
+        );
     }
 }

@@ -72,13 +72,20 @@ impl SM3 {
 
         while msg.len() >= 64 {
             for i in 0..16 {
-                ww[i] = u32::from_be_bytes([msg[4*i], msg[4*i+1], msg[4*i+2], msg[4*i+3]]);
+                ww[i] = u32::from_be_bytes([
+                    msg[4 * i],
+                    msg[4 * i + 1],
+                    msg[4 * i + 2],
+                    msg[4 * i + 3],
+                ]);
             }
             for i in 16..68 {
-                ww[i] = self.p1(ww[i-16] ^ ww[i-9] ^ self.left_rotate(ww[i-3], 15)) ^ self.left_rotate(ww[i-13], 7) ^ ww[i-6];
+                ww[i] = self.p1(ww[i - 16] ^ ww[i - 9] ^ self.left_rotate(ww[i - 3], 15))
+                    ^ self.left_rotate(ww[i - 13], 7)
+                    ^ ww[i - 6];
             }
             for i in 0..64 {
-                w1[i] = ww[i] ^ ww[i+4];
+                w1[i] = ww[i] ^ ww[i + 4];
             }
 
             let mut aa = a1;
@@ -91,11 +98,22 @@ impl SM3 {
             let mut hh = h1;
 
             for i in 0..16 {
-                let val1 = self.left_rotate(aa, 12).wrapping_add(ee).wrapping_add(self.left_rotate(0x79cc_4519, i as u32));
+                let val1 = self
+                    .left_rotate(aa, 12)
+                    .wrapping_add(ee)
+                    .wrapping_add(self.left_rotate(0x79cc_4519, i as u32));
                 let ss1 = self.left_rotate(val1, 7);
                 let ss2 = ss1 ^ self.left_rotate(aa, 12);
-                let tt1 = self.ff0(aa, bb, cc).wrapping_add(dd).wrapping_add(ss2).wrapping_add(w1[i]);
-                let tt2 = self.gg0(ee, ff, gg).wrapping_add(hh).wrapping_add(ss1).wrapping_add(ww[i]);
+                let tt1 = self
+                    .ff0(aa, bb, cc)
+                    .wrapping_add(dd)
+                    .wrapping_add(ss2)
+                    .wrapping_add(w1[i]);
+                let tt2 = self
+                    .gg0(ee, ff, gg)
+                    .wrapping_add(hh)
+                    .wrapping_add(ss1)
+                    .wrapping_add(ww[i]);
 
                 dd = cc;
                 cc = self.left_rotate(bb, 9);
@@ -108,11 +126,22 @@ impl SM3 {
             }
 
             for i in 16..64 {
-                let val1 = self.left_rotate(aa, 12).wrapping_add(ee).wrapping_add(self.left_rotate(0x7a87_9d8a, i as u32));
+                let val1 = self
+                    .left_rotate(aa, 12)
+                    .wrapping_add(ee)
+                    .wrapping_add(self.left_rotate(0x7a87_9d8a, i as u32));
                 let ss1 = self.left_rotate(val1, 7);
                 let ss2 = ss1 ^ self.left_rotate(aa, 12);
-                let tt1 = self.ff1(aa, bb, cc).wrapping_add(dd).wrapping_add(ss2).wrapping_add(w1[i]);
-                let tt2 = self.gg1(ee, ff, gg).wrapping_add(hh).wrapping_add(ss1).wrapping_add(ww[i]);
+                let tt1 = self
+                    .ff1(aa, bb, cc)
+                    .wrapping_add(dd)
+                    .wrapping_add(ss2)
+                    .wrapping_add(w1[i]);
+                let tt2 = self
+                    .gg1(ee, ff, gg)
+                    .wrapping_add(hh)
+                    .wrapping_add(ss1)
+                    .wrapping_add(ww[i]);
 
                 dd = cc;
                 cc = self.left_rotate(bb, 9);
@@ -187,7 +216,7 @@ impl Hash for SM3 {
         let nblocks = msg.len() / self.block_size();
         self.update(msg.clone());
 
-        self.unhandle_msg = msg[nblocks * self.block_size() ..].to_vec();
+        self.unhandle_msg = msg[nblocks * self.block_size()..].to_vec();
         to_write as i32
     }
 
@@ -205,10 +234,10 @@ impl Hash for SM3 {
             new_input[..input_len].clone_from_slice(&input[..input_len]);
             input = new_input;
         }
-        
-        let out = &mut input[input_len .. input_len + needed];
+
+        let out = &mut input[input_len..input_len + needed];
         for i in 0..8 {
-            out[i*4..(i+1)*4].clone_from_slice(&self.digest[i].to_be_bytes());
+            out[i * 4..(i + 1) * 4].clone_from_slice(&self.digest[i].to_be_bytes());
         }
         out.to_vec()
     }
@@ -224,12 +253,26 @@ mod tests {
         hw.reset();
         hw.write(String::from("helloworld").into_bytes());
         let hash = hw.sum(vec![]);
-        let ss = hash.iter().map(|x| format!("{:02X}", x)).collect::<Vec<String>>().join("");
-        assert_eq!("C70C5F73DA4E8B8B73478AF54241469566F6497E16C053A03A0170FA00078283", ss);
+        let ss = hash
+            .iter()
+            .map(|x| format!("{:02X}", x))
+            .collect::<Vec<String>>()
+            .join("");
+        assert_eq!(
+            "C70C5F73DA4E8B8B73478AF54241469566F6497E16C053A03A0170FA00078283",
+            ss
+        );
 
         hw.reset();
         let hash2 = hw.sum(String::from("helloworld").into_bytes());
-        let ss2 = hash2.iter().map(|x| format!("{:02X}", x)).collect::<Vec<String>>().join("");
-        assert_eq!("C70C5F73DA4E8B8B73478AF54241469566F6497E16C053A03A0170FA00078283", ss2);
+        let ss2 = hash2
+            .iter()
+            .map(|x| format!("{:02X}", x))
+            .collect::<Vec<String>>()
+            .join("");
+        assert_eq!(
+            "C70C5F73DA4E8B8B73478AF54241469566F6497E16C053A03A0170FA00078283",
+            ss2
+        );
     }
 }
